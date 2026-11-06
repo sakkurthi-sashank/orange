@@ -1,0 +1,71 @@
+{
+  "name": "orange",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "description": "Multi-agent production incident investigation system built on LangGraph",
+  "author": "sakkurthi-sashank",
+  "license": "MIT",
+  "keywords": [
+    "langgraph",
+    "multi-agent",
+    "incident-response",
+    "sre",
+    "openai"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "start": "tsx src/server/main.ts",
+    "dev": "tsx watch src/server/main.ts",
+    "lint": "eslint",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepare": "simple-git-hooks"
+  },
+  "dependencies": {
+    "@hono/node-server": "catalog:prod",
+    "@hono/standard-validator": "catalog:prod",
+    "@langchain/core": "catalog:prod",
+    "@langchain/langgraph": "catalog:prod",
+    "@standard-schema/spec": "catalog:prod",
+    "hono": "catalog:prod",
+    "openai": "catalog:prod",
+    "zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "catalog:cli",
+    "@antfu/ni": "catalog:cli",
+    "@antfu/utils": "catalog:inlined",
+    "@types/node": "catalog:types",
+    "bumpp": "catalog:cli",
+    "eslint": "catalog:cli",
+    "lint-staged": "catalog:cli",
+    "simple-git-hooks": "catalog:cli",
+    "tinyexec": "catalog:testing",
+    "tsdown": "catalog:cli",
+    "tsx": "catalog:cli",
+    "typescript": "catalog:cli",
+    "vite": "catalog:cli",
+    "vitest": "catalog:testing",
+    "vitest-package-exports": "catalog:testing",
+    "yaml": "catalog:testing"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && npx lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}
