@@ -1,6 +1,20 @@
+import type { ServiceSummary } from '../../core/types'
 import { z } from 'zod'
 import { EVIDENCE_SIGNALS } from '../../core/evidence'
 import { ROOT_CAUSE_CATEGORIES, SPECIALIST_AGENTS } from '../../core/types'
+
+export type ServiceNames = readonly [string, ...string[]]
+
+export function serviceNames(catalog: readonly ServiceSummary[]): ServiceNames {
+  const [first, ...rest] = catalog.map(service => service.name)
+  if (!first)
+    throw new Error('Service catalog is empty')
+  return [first, ...rest]
+}
+
+export function serviceField(services: ServiceNames): z.ZodType<string> {
+  return z.enum(services).describe('The catalog service where the fault originates')
+}
 
 export const ObservationSchema = z.object({
   claim: z.string().describe('One specific, checkable statement with numbers and UTC times where available'),

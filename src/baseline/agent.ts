@@ -6,6 +6,7 @@ import type { AgentErrorRecord } from '../core/investigation'
 import type { InvestigationReport } from '../report/types'
 import type { CitedClaim } from './schema'
 import { withRecovery } from '../agents/recovery'
+import { serviceNames } from '../agents/shared/schemas'
 import { wrapUpReason } from '../agents/specialists/node'
 import { registerObservations } from '../core/evidence'
 import { clampConfidence, rankHypotheses } from '../core/hypothesis'
@@ -14,7 +15,7 @@ import { assembleReport, fallbackNarrative } from '../report/assemble'
 import { decideStatus } from '../report/status'
 import { TOOLSETS } from '../tools'
 import { BASELINE_SYSTEM, buildBaselinePrompt } from './prompt'
-import { BaselineReportSchema } from './schema'
+import { baselineReportSchema } from './schema'
 
 export interface SingleAgentOutcome {
   report: InvestigationReport
@@ -36,7 +37,7 @@ export async function runSingleAgent(ctx: RunContext, incident: IncidentReport):
     submit: {
       name: 'submit_report',
       description: 'Hand in your investigation report. Call exactly once, when done.',
-      schema: BaselineReportSchema,
+      schema: baselineReportSchema(serviceNames(ctx.catalog)),
     },
     maxTurns: ctx.config.limits.maxBaselineTurns,
     effort: settings.effort,
