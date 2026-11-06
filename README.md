@@ -50,20 +50,9 @@ Errors are JSON: `400` with validation `issues`, `404` for unknown scenarios or 
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    START([incident]) --> O[Orchestrator]
-    O -- "Send × N (parallel)" --> OBS[Observability agent]
-    O -- "Send × N (parallel)" --> DEP[Dependency agent]
-    OBS --> O
-    DEP --> O
-    O -- no runnable tasks --> R[Reasoning agent]
-    R --> C[Critic]
-    C -- "investigate: follow-ups" --> O
-    C -- accept / inconclusive / limit hit --> REP[Reporting agent]
-    O -- limit hit while replanning --> REP
-    REP --> END([report])
-```
+![Big picture: an API call starts a LangGraph investigation; agents use simulated tools and return a grounded report](docs/architecture/1-big-picture.svg)
+
+![Agent loop: the orchestrator plans tasks, specialists work in parallel, and the critic can send the team back for more evidence](docs/architecture/2-agent-loop.svg)
 
 | Agent | Role | Tools | Produces |
 | --- | --- | --- | --- |
@@ -86,6 +75,8 @@ The agents don't form a fixed chain of prompts. They coordinate through shared s
 Reducers make concurrent writes safe: tasks are upserted by ID, and evidence and tool calls are append-only and deduplicated.
 
 ## Reliability
+
+![Reliability: injected failures, recovery paths and hard limits](docs/architecture/4-reliability.svg)
 
 | Mechanism | Where |
 | --- | --- |
@@ -111,6 +102,8 @@ Each failure has a recovery path:
 Termination reasons are recorded in the report (`critic_accepted`, `max_rounds`, `token_budget_exhausted`, …).
 
 ## Evidence, facts and inconclusive outcomes
+
+![Evidence and grounding: tool calls, evidence, hypotheses, audit and status rule](docs/architecture/3-evidence-grounding.svg)
 
 - **Grounding.** A model-submitted observation becomes `Evidence` only through `registerObservations`. Citations to unknown tool calls are dropped and counted. A "fact" with no valid citation is downgraded to an inference. Evidence backed only by partial data is marked `partial`. A failed call is accepted as proof of a data gap.
 - **Critic audit (rule-based, not model judgment).** Flags hypotheses that have no verified support, rest only on historical precedent, are contradicted by more verified facts than support them, blame a change made after detection, blame a change that isn't in the change log, name an unknown service, or have failed queries against the suspect. Several flags cap confidence. The caps apply after the critic model's own adjustments.
@@ -152,6 +145,8 @@ All tools take zod-validated input and return a `ToolEnvelope { callId, status: 
 Each scenario has a ground truth: the root-cause services, a mechanism pattern, an expected outcome, and the key evidence a good investigation should surface. `test/scenarios.test.ts` checks that the key evidence actually exists in each generated dataset.
 
 ## Evaluation
+
+![Results: multi-agent vs single-agent on 12 incidents](docs/architecture/5-results.svg)
 
 `POST /evaluations` runs every scenario through both systems with the same model, tool runtime, injected faults, evidence validation, report assembly and status policy. The baseline (`src/baseline/`) is one agent with all five tools, the same evidence discipline in its prompt, and a turn budget comparable to the multi-agent total. When a scenario injects agent crashes, the baseline also crashes once.
 
@@ -200,6 +195,10 @@ test/              unit tests plus end-to-end graph tests with a scripted model
 - Final outputs use strict function schemas (tool loops) or strict JSON-schema structured outputs (single-call agents); zod validates both.
 - Reasoning effort is set per agent in `config.ts`: reasoning and the baseline `medium`, everything else `low`.
 - Prompt caching is automatic; a per-agent `prompt_cache_key` improves cache hits.
+
+## How this was built
+
+The project was built with AI assistance (Claude Code). [docs/prompt-playbook.md](docs/prompt-playbook.md) is a retrospective: the prompts I'd use to drive the same build again.
 
 ## Limitations
 
