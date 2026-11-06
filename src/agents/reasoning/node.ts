@@ -7,9 +7,10 @@ import { runToolLoop } from '../../llm/tool-loop'
 import { TOOLSETS } from '../../tools'
 import { getRunContext } from '../context'
 import { withRecovery } from '../recovery'
+import { serviceNames } from '../shared/schemas'
 import { wrapUpReason } from '../specialists/node'
 import { buildReasoningPrompt, REASONING_SYSTEM } from './prompt'
-import { ReasoningSubmissionSchema } from './schema'
+import { reasoningSubmissionSchema } from './schema'
 
 const REASONING_TURNS = 4
 
@@ -28,7 +29,7 @@ export async function reasoningNode(state: InvestigationStateType, runtime: Grap
     submit: {
       name: 'submit_hypotheses',
       description: 'Hand in your ranked, evidence-linked hypotheses. Call exactly once, when done.',
-      schema: ReasoningSubmissionSchema,
+      schema: reasoningSubmissionSchema(serviceNames(ctx.catalog)),
     },
     maxTurns: Math.min(REASONING_TURNS, ctx.config.limits.maxAgentTurns),
     effort: settings.effort,

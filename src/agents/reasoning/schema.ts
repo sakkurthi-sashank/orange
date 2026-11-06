@@ -1,5 +1,6 @@
+import type { ServiceNames } from '../shared/schemas'
 import { z } from 'zod'
-import { HypothesisInputSchema, ObservationSchema } from '../shared/schemas'
+import { HypothesisInputSchema, ObservationSchema, serviceField } from '../shared/schemas'
 
 export const ReasoningSubmissionSchema = z.object({
   analysis: z.string().describe('Timeline and reasoning: what explains the symptoms, and what does not fit'),
@@ -10,3 +11,9 @@ export const ReasoningSubmissionSchema = z.object({
 })
 
 export type ReasoningSubmission = z.infer<typeof ReasoningSubmissionSchema>
+
+export function reasoningSubmissionSchema(services: ServiceNames): z.ZodType<ReasoningSubmission> {
+  return ReasoningSubmissionSchema.extend({
+    hypotheses: z.array(HypothesisInputSchema.extend({ rootCauseService: serviceField(services) })).describe('Competing explanations, most likely first'),
+  })
+}

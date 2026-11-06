@@ -169,6 +169,8 @@ Each scenario has a ground truth: the root-cause services, a mechanism pattern, 
 
 Results come back from `GET /evaluations/:id`, and the comparison tables from `GET /evaluations/:id/report`.
 
+The latest live results (gpt-5-mini, all 12 incidents) and their analysis are in [docs/evaluation.md](docs/evaluation.md).
+
 ## Project structure
 
 ```
